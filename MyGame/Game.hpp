@@ -8,6 +8,7 @@ using namespace std;
 class Game {
 private:
 	SDL_Window* gameWindow;
+	SDL_Renderer* gameRenderer;
 	bool isRunning;
 
 public:
@@ -30,7 +31,10 @@ public:
  /**
 	 @brief
  **/
-	void ProcessInput();
-
+	void processInput();
+ /**
+	 @brief
+ **/
+	void generateOutput();
 
 };
