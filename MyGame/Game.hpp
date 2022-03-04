@@ -27,7 +27,10 @@ public:
      @brief 
  **/
 	void shutDownGame();
-
+ /**
+	 @brief
+ **/
+	void ProcessInput();
 
 
 };
