@@ -1,7 +1,8 @@
 #include "Game.hpp"
 
 Game::Game() {
-
+	this->gameWindow = nullptr;
+	this->isRunning = true;
 }
 
 bool Game::initializeGame() {
@@ -20,4 +21,12 @@ bool Game::initializeGame() {
 
 void Game::runGameLoop() {
 
+	while (this->isRunning) {
+
+	}
+}
+
+void Game::shutDownGame() {
+	SDL_DestroyWindow(this->gameWindow);
+	SDL_Quit();
 }

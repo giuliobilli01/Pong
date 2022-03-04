@@ -7,7 +7,8 @@ using namespace std;
 
 class Game {
 private:
-
+	SDL_Window* gameWindow;
+	bool isRunning;
 
 public:
  /**
