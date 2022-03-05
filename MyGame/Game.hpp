@@ -12,6 +12,9 @@ private:
 	bool isRunning;
 	Vector2 PaddlePos;
 	Vector2 BallPos;
+	Uint64 ticksCounter;
+	int paddleDir;
+	const int thickness = 15;
 
 public:
  /**
@@ -38,5 +41,9 @@ public:
 	 @brief
  **/
 	void generateOutput();
+ /**
+	 @brief
+ **/
+	void updateGame();
 
 };

@@ -8,6 +8,8 @@ Game::Game() {
 	this->BallPos.y = WINDOW_HEIGHT / 2;
 	this->PaddlePos.x = 1;
 	this->PaddlePos.y = WINDOW_HEIGHT / 2;
+	this->ticksCounter = 0;
+	this->paddleDir = 0;
 	
 }
 
@@ -35,7 +37,7 @@ void Game::runGameLoop() {
 	while (this->isRunning) {
 
 		this->processInput();
-		//update
+		this->updateGame();
 		this->generateOutput();
 	}
 }
@@ -59,6 +61,9 @@ void Game::processInput() {
 	
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE]) isRunning = false;
+	if (state[SDL_SCANCODE_W]) this->paddleDir -= 1;
+	if (state[SDL_SCANCODE_S]) this->paddleDir +=  1;
+
 }
 
 void Game::generateOutput() {
@@ -68,7 +73,6 @@ void Game::generateOutput() {
 	SDL_RenderClear(this->gameRenderer);
 
 	// Draw output
-	const int thickness = 15;
 	SDL_SetRenderDrawColor(this->gameRenderer, 255, 255, 255, 255);
 	// Upper bound wall
 	SDL_Rect upperWall{
@@ -112,3 +116,25 @@ void Game::generateOutput() {
 	// Switch to front buffer
 	SDL_RenderPresent(this->gameRenderer);
 }	
+
+void Game::updateGame() {
+	// Wait until 16 ms has elapsed since last frame
+	while (!SDL_TICKS_PASSED(SDL_GetTicks64(), this->ticksCounter + 16))
+		;
+	// Delta time is the difference in ticks from last frame
+	float deltaTime = (SDL_GetTicks64() - this->ticksCounter) / 1000.0f;
+	// Update tick counts for the next frame
+
+	// Avoid too big delta time
+	if (deltaTime > 0.05f) deltaTime = 0.05f;
+	ticksCounter = SDL_GetTicks64();
+
+	//Update game objects
+	if (this->paddleDir != 0) {
+		this->PaddlePos.y += this->paddleDir * 100.0f * deltaTime;
+		if (this->PaddlePos.y < (PADDLE_HEIGHT / 2.0f + this->thickness))
+			this->PaddlePos.y = PADDLE_HEIGHT / 2.0f + this->thickness;
+		else if (this->PaddlePos.y > (WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness)) 
+			this->PaddlePos.y = WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness;
+	}
+}
