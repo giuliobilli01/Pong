@@ -12,6 +12,7 @@ private:
 	bool isRunning;
 	Vector2 PaddlePos;
 	Vector2 BallPos;
+	Vector2 BallVel;
 	Uint64 ticksCounter;
 	int paddleDir;
 	const int thickness = 15;

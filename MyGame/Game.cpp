@@ -6,7 +6,9 @@ Game::Game() {
 	this->gameRenderer = nullptr;
 	this->BallPos.x = WINDOW_WIDTH / 2;
 	this->BallPos.y = WINDOW_HEIGHT / 2;
-	this->PaddlePos.x = 1;
+	this->BallVel.x = -130.0f;
+	this->BallVel.y = 175.0f;
+	this->PaddlePos.x = 10;
 	this->PaddlePos.y = WINDOW_HEIGHT / 2;
 	this->ticksCounter = 0;
 	this->paddleDir = 0;
@@ -129,7 +131,9 @@ void Game::updateGame() {
 	if (deltaTime > 0.05f) deltaTime = 0.05f;
 	ticksCounter = SDL_GetTicks64();
 
-	//Update game objects
+	// Update game objects
+
+	// Update paddle 
 	if (this->paddleDir != 0) {
 		this->PaddlePos.y += this->paddleDir * 100.0f * deltaTime;
 		if (this->PaddlePos.y < (PADDLE_HEIGHT / 2.0f + this->thickness))
@@ -137,4 +141,18 @@ void Game::updateGame() {
 		else if (this->PaddlePos.y > (WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness)) 
 			this->PaddlePos.y = WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness;
 	}
+
+	// Update ball
+	this->BallPos.x += this->BallVel.x * deltaTime;
+	this->BallPos.y += this->BallVel.y * deltaTime;
+	// Ball collides with the top wall
+	if (this->BallPos.y <= thickness && this->BallVel.y < 0) this->BallVel.y *= -1;
+	// Ball collides with the bottom wall
+	if (this->BallPos.y >= WINDOW_HEIGHT && this->BallVel.y > 0) this->BallVel.y *= -1;
+	// Ball collides with the right wall
+	if (this->BallPos.x >= WINDOW_WIDTH && this->BallVel.x > 0) this->BallVel.x *= -1;
+	// Ball collides with paddle
+	double diff = abs(this->BallPos.y - this->PaddlePos.y);
+	if (diff <= PADDLE_HEIGHT / 2.0f && this->BallPos.x <= 25 && this->BallPos.x >= 20 && this->BallVel.x < 0)
+		this->BallVel.x *= -1;
 }
