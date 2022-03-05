@@ -10,6 +10,8 @@ private:
 	SDL_Window* gameWindow;
 	SDL_Renderer* gameRenderer;
 	bool isRunning;
+	Vector2 PaddlePos;
+	Vector2 BallPos;
 
 public:
  /**
