@@ -8,10 +8,13 @@ Game::Game() {
 	this->BallPos.y = WINDOW_HEIGHT / 2;
 	this->BallVel.x = -130.0f;
 	this->BallVel.y = 175.0f;
-	this->PaddlePos.x = 10;
-	this->PaddlePos.y = WINDOW_HEIGHT / 2;
+	this->leftPaddlePos.x = 10;
+	this->leftPaddlePos.y = WINDOW_HEIGHT / 2;
+	this->rightPaddlePos.x = WINDOW_WIDTH - 10;
+	this->rightPaddlePos.y = WINDOW_HEIGHT / 2;
 	this->ticksCounter = 0;
-	this->paddleDir = 0;
+	this->leftPaddleDir = 0;
+	this->rightPaddleDir = 0;
 	
 }
 
@@ -63,8 +66,10 @@ void Game::processInput() {
 	
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE]) isRunning = false;
-	if (state[SDL_SCANCODE_W]) this->paddleDir -= 1;
-	if (state[SDL_SCANCODE_S]) this->paddleDir +=  1;
+	if (state[SDL_SCANCODE_W]) this->leftPaddleDir -= 1;
+	if (state[SDL_SCANCODE_S]) this->leftPaddleDir +=  1;
+	if(state[SDL_SCANCODE_UP]) this->rightPaddleDir -= 1;
+	if (state[SDL_SCANCODE_DOWN]) this->rightPaddleDir += 1;
 
 }
 
@@ -90,12 +95,12 @@ void Game::generateOutput() {
 		WINDOW_WIDTH,
 		thickness
 	};
-	// Right wall
-	SDL_Rect rightWall{
-		WINDOW_WIDTH - thickness,
-		0,
+	// Left paddle
+	SDL_Rect leftPaddle{
+		static_cast<int>(this->leftPaddlePos.x - thickness / 2),
+		static_cast<int>(this->leftPaddlePos.y - 100 / 2),
 		thickness,
-		WINDOW_HEIGHT
+		100
 	};
 	SDL_Rect ball{
 		static_cast<int>(this->BallPos.x - thickness / 2),
@@ -103,17 +108,18 @@ void Game::generateOutput() {
 		thickness,
 		thickness
 	};
-	SDL_Rect paddle{
-		static_cast<int>(this->PaddlePos.x - thickness / 2),
-		static_cast<int>(this->PaddlePos.y - 100 /2),
+	// Right paddle
+	SDL_Rect rightPaddle{
+		static_cast<int>(this->rightPaddlePos.x - thickness / 2),
+		static_cast<int>(this->rightPaddlePos.y - 100 / 2),
 		thickness,
 		100
 	}; 
 	SDL_RenderFillRect(this->gameRenderer, &upperWall);
 	SDL_RenderFillRect(this->gameRenderer, &lowerWall);
-	SDL_RenderFillRect(this->gameRenderer, &rightWall);
+	SDL_RenderFillRect(this->gameRenderer, &rightPaddle);
 	SDL_RenderFillRect(this->gameRenderer, &ball);
-	SDL_RenderFillRect(this->gameRenderer, &paddle);
+	SDL_RenderFillRect(this->gameRenderer, &leftPaddle);
 
 	// Switch to front buffer
 	SDL_RenderPresent(this->gameRenderer);
@@ -134,13 +140,8 @@ void Game::updateGame() {
 	// Update game objects
 
 	// Update paddle 
-	if (this->paddleDir != 0) {
-		this->PaddlePos.y += this->paddleDir * 100.0f * deltaTime;
-		if (this->PaddlePos.y < (PADDLE_HEIGHT / 2.0f + this->thickness))
-			this->PaddlePos.y = PADDLE_HEIGHT / 2.0f + this->thickness;
-		else if (this->PaddlePos.y > (WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness)) 
-			this->PaddlePos.y = WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness;
-	}
+	this->updatePaddle(deltaTime, 1);
+	this->updatePaddle(deltaTime, 2);
 
 	// Update ball
 	this->BallPos.x += this->BallVel.x * deltaTime;
@@ -149,10 +150,35 @@ void Game::updateGame() {
 	if (this->BallPos.y <= thickness && this->BallVel.y < 0) this->BallVel.y *= -1;
 	// Ball collides with the bottom wall
 	if (this->BallPos.y >= WINDOW_HEIGHT && this->BallVel.y > 0) this->BallVel.y *= -1;
-	// Ball collides with the right wall
-	if (this->BallPos.x >= WINDOW_WIDTH && this->BallVel.x > 0) this->BallVel.x *= -1;
 	// Ball collides with paddle
-	double diff = abs(this->BallPos.y - this->PaddlePos.y);
-	if (diff <= PADDLE_HEIGHT / 2.0f && this->BallPos.x <= 25 && this->BallPos.x >= 20 && this->BallVel.x < 0)
+	double leftDiff = abs(this->BallPos.y - this->leftPaddlePos.y);
+	double rightDiff = abs(this->BallPos.y - this->rightPaddlePos.y);
+	if (leftDiff <= PADDLE_HEIGHT / 2.0f && this->BallPos.x <= 25 && this->BallPos.x >= 20 && this->BallVel.x < 0)
 		this->BallVel.x *= -1;
+	if (rightDiff <= PADDLE_HEIGHT / 2.0f && this->BallPos.x >= WINDOW_WIDTH - 25 && this->BallPos.x <= WINDOW_WIDTH - 20 && this->BallVel.x > 0)
+		this->BallVel.x *= -1;
+	if (this->BallPos.x > WINDOW_WIDTH || this->BallPos.x < 0)
+		this->isRunning = false;
+}
+
+void Game::updatePaddle(float deltaTime, int paddleNumber) {
+	if (paddleNumber == 1) {
+		if (this->leftPaddleDir != 0) {
+			this->leftPaddlePos.y += this->leftPaddleDir * 100.0f * deltaTime;
+			if (this->leftPaddlePos.y < (PADDLE_HEIGHT / 2.0f + this->thickness))
+				this->leftPaddlePos.y = PADDLE_HEIGHT / 2.0f + this->thickness;
+			else if (this->leftPaddlePos.y > (WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness))
+				this->leftPaddlePos.y = WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness;
+		}
+	} 
+	else 
+	{
+		if (this->rightPaddleDir != 0) {
+			this->rightPaddlePos.y += this->rightPaddleDir * 100.0f * deltaTime;
+			if (this->rightPaddlePos.y < (PADDLE_HEIGHT / 2.0f + this->thickness))
+				this->rightPaddlePos.y = PADDLE_HEIGHT / 2.0f + this->thickness;
+			else if (this->rightPaddlePos.y > (WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness))
+				this->rightPaddlePos.y = WINDOW_HEIGHT - PADDLE_HEIGHT / 2.0f - this->thickness;
+		}
+	}
 }

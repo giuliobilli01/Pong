@@ -10,11 +10,13 @@ private:
 	SDL_Window* gameWindow;
 	SDL_Renderer* gameRenderer;
 	bool isRunning;
-	Vector2 PaddlePos;
+	Vector2 leftPaddlePos;
+	Vector2 rightPaddlePos;
 	Vector2 BallPos;
 	Vector2 BallVel;
 	Uint64 ticksCounter;
-	int paddleDir;
+	int leftPaddleDir;
+	int rightPaddleDir;
 	const int thickness = 15;
 
 public:
@@ -46,5 +48,9 @@ public:
 	 @brief
  **/
 	void updateGame();
+ /**
+	@brief
+ **/
+	void updatePaddle(float deltaTime, int paddleNumber);
 
 };
